@@ -1,11 +1,10 @@
 #include <stdio.h>
 #include <limits.h>
-#include "../lib/lib.h"
 
 double atof(char s[]);
 
 int main() {
-  char test_inputs[][10] = {{"  -7.001"}, {" +123a"}, {"32.07"}, {"7e-2"}, {"10E3"}};
+  char test_inputs[][10] = {{"  -7.001"}, {" +123"}, {"32.07"}, {"7e-2"}, {"10E3"}};
   double test_ouputs[] = {-7.001, 123.0, 32.07, 0.07, 10000};
 
   int test_failed = 0;
