@@ -45,10 +45,6 @@ int main()
 }
 
 int expand_my_first_solution(char s[], char t[]) {
-  char sets[][27] = { {"ABCDEFGHIJKLMNOPQRSTUVWXYZ"},
-		      {"abcdefghijklmnopqrstuvwxyz"},
-		      {"0123456789"}};
-
   int i = 0;
   int j = 0;
   if (s[i] == '-') {
@@ -64,11 +60,11 @@ int expand_my_first_solution(char s[], char t[]) {
       continue;
 
     if (s[i] >= 'a' && s[i] <= 'z') {
-      set_id = 1;
+      set_id = 'a';
     } else if (s[i] >= 'A' && s[i] <= 'Z') {
-      set_id = 0;
+      set_id = 'A';
     } else if (s[i] >= '0' && s[i] <= '9') {
-      set_id = 2;
+      set_id = '0';
     } else {
       // unsupported character
       printf("unsupported char %c\n", s[i]);
@@ -76,7 +72,6 @@ int expand_my_first_solution(char s[], char t[]) {
     }
     int id = s[i];
     if (last_set == set_id) {
-      char first = sets[set_id][0];
       for (int i = from+1; i <= id; i++, j++) {
         t[j] = i;
       }
