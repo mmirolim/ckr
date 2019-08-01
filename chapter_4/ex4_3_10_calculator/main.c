@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #define MAXLEN 100
 #include "io.c"
 #include "stack.c"
@@ -22,17 +23,17 @@ int main()
     case NUMBER:
       push(atof(s));
       break;
-    case '+':
+    case ADD:
       push(pop()+pop());
       break;
-    case '-':
+    case SUB:
       arg2 = pop();
       push(pop() - arg2);
       break;
-    case '*':
+    case MUL:
       push(pop()*pop());
       break;
-    case '/':
+    case DIV:
       arg2 = pop();
       if (arg2 == 0.0) {
 	printf("error division by zero\n");
@@ -40,7 +41,7 @@ int main()
       }
       push(pop()/ arg2);
       break;
-    case '%':
+    case MOD:
       arg2 = pop();
       if (arg2 == 0.0) {
 	printf("error modulus is zero\n");
@@ -48,17 +49,27 @@ int main()
       }
       push((int)pop()%(int)arg2);
       break;
-    case '\n':
+    case TOP:
       printf("%f\n" , pop());
       break;
-    case 't':
+    case PEEK:
       printf("%f\n", peek());
       break;
-    case 'c':
+    case CLEAR:
       clear();
       break;
-    case 's':
+    case SWAP:
       swap();
+      break;
+    case SIN:
+      push(sin(pop()));
+      break;
+    case EXP:
+      push(exp(pop()));
+      break;
+    case POW:
+      arg2 = pop();
+      push(pow(pop(), arg2));
       break;
     default:
       printf("error unsupported character >%s<" ,s);
