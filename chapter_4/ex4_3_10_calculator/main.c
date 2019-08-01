@@ -4,6 +4,7 @@
 #define MAXLEN 100
 #include "io.c"
 #include "stack.c"
+#include "var.c"
 
 void push(double d);
 double pop();
@@ -11,13 +12,18 @@ double peek();
 void clear();
 void swap();
 int getop(char s[]);
+void init_var_store();
+int isvar(char c);
+double getvar(char c);
+int putvar(double d);
 
 // reverse Polish calculator
 int main()
 {
   char s[MAXLEN];
   int type;
-  double arg2;
+  double out, arg2;
+  init_var_store();
   while ((type = getop(s)) != EOF) {
     switch (type) {
     case NUMBER:
@@ -50,7 +56,8 @@ int main()
       push((int)pop()%(int)arg2);
       break;
     case TOP:
-      printf("%f\n" , pop());
+      out = pop();
+      printf("%c=%f\n" , putvar(out), out);
       break;
     case PEEK:
       printf("%f\n", peek());
@@ -72,8 +79,12 @@ int main()
       push(pow(pop(), arg2));
       break;
     default:
-      printf("error unsupported character >%s<" ,s);
-      return 1;
+      if (isvar(s[0])) {
+	push(getvar(s[0]));
+      } else {
+	printf("error unsupported character >%s<" ,s);
+	return 1;
+      }
     }
   }
 }
