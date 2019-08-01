@@ -6,6 +6,9 @@
 
 void push(double d);
 double pop();
+double peek();
+void clear();
+void swap();
 int getop(char s[]);
 
 // reverse Polish calculator
@@ -47,6 +50,15 @@ int main()
       break;
     case '\n':
       printf("%f\n" , pop());
+      break;
+    case 't':
+      printf("%f\n", peek());
+      break;
+    case 'c':
+      clear();
+      break;
+    case 's':
+      swap();
       break;
     default:
       printf("error unsupported character >%s<" ,s);
