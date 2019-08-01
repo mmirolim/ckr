@@ -11,11 +11,16 @@ int getop(char s[]) {
   // skip spaces
   while ((s[0] = c = getch()) == ' ' || c == '\t')
     ;
-
+  s[1] = '\0';
 
   if (!isdigit(c) && c != '-') {
-    s[1] = '\0';
     return c; // not a number
+  } else if (c == '-') {
+    // check if '-' is op or part of number
+    c = getch();
+    ungetch(c);
+    if (!isdigit(c))
+      return '-';
   }
 
   i = 0; // init i
