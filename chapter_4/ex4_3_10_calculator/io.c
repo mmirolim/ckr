@@ -19,6 +19,7 @@
 int getch(void);
 void ungetch(char c);
 int streq(char s1[], char s2[]);
+void ungets(char s[]);
 
 int getop(char s[]) {
   int i, c;
@@ -86,6 +87,14 @@ void ungetch(char c) {
     printf("ungetch: too many characters\n");
   else
     buf[bufp++] = c;
+}
+
+void ungets(char s[]) {
+  int i = 0;
+  while (s[i++] != '\0')
+    ;
+  while (i > 0)
+    ungetch(s[--i]);
 }
 
 int streq(char s1[], char s2[]) {

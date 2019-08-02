@@ -16,6 +16,7 @@ void init_var_store();
 int isvar(char s[]);
 double getvar(char s[]);
 void putvar(char s[], double d);
+void ungets(char s[]);
 
 // reverse Polish calculator
 int main()
