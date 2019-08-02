@@ -53,7 +53,7 @@ int main()
 	printf("error modulus is zero\n");
 	return 1;
       }
-      push((int)pop()%(int)arg2);
+      push(fmod(pop(),arg2));
       break;
     case TOP:
       out = pop();
