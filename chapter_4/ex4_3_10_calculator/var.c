@@ -1,27 +1,29 @@
+#include <stdio.h>
 #define MAXVARS 26
+#define LASTOUTVAR "Z"
+
 int isvar_set[MAXVARS];
 double var_store[MAXVARS];
+int valid_var_name(char s[]);
 
 void init_var_store() {
 for (int i = 0; i < MAXVARS; i++)
   isvar_set[i] = 0;
 }
 
-int isvar(char c) {
-  return ( c >= 'A' && c <= 'Z') ? isvar_set[c - 'A']: 0;
+int valid_var_name(char s[]) {
+  return ( s[0] >= 'A' && s[0] <= 'Z');
 }
 
-int varp = 0;
-
-int putvar(double d) {
-  varp %= MAXVARS;
-  int id = varp;
-  var_store[id] = d;
-  isvar_set[id] = 1;
-  varp++;
-  return id + 'A';
+int isvar(char s[]) {
+  return valid_var_name(s) ? isvar_set[s[0]]: 0;
 }
 
-double getvar(char c) {
-  return var_store[c - 'A'];
+void putvar(char s[], double d) {
+  var_store[s[0]] = d;
+  isvar_set[s[0]] = 1;
+}
+
+double getvar(char s[]) {
+  return var_store[s[0]];
 }

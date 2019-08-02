@@ -14,6 +14,7 @@
 #define SIN '1'
 #define EXP '2'
 #define POW '3'
+#define VARASSIGN '$'
 
 int getch(void);
 void ungetch(char c);
@@ -45,6 +46,12 @@ int getop(char s[]) {
       c = POW;
     } else if (streq(s, "exp")) {
       c = EXP;
+    } else if (s[0] == VARASSIGN) {
+      c = VARASSIGN;
+      // rm varassing
+      for (int j =1;s[j] != '\0'; j++)
+	s[j-1] = s[j];
+      s[i-1] = '\0';
     }
     return c;
   } else if (c == '-') {
