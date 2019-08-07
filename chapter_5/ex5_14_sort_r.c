@@ -9,10 +9,11 @@ int readlines(char *lines[], int max_lines);
 void writelines(char *lines[], int nlines);
 void my_qsort(void *lines[], int left, int right,
 	      int (*comp)(void *, void *), int order);
-int numcmp(const char *s1, const char *s2);
-int insenstrcmp(const char *s1, const char *s2);
-int dircmp(const char *s1, const char *s2);
-int dirfcmp(const char *s1, const char *s2);
+int numcmp(char *s1,  char *s2);
+int mystrcmp(char *s1, char *s2);
+int dircmp(char *s1, char *s2);
+int nofold(int);
+int (*foldfn)(int);
 
 int main(int argc, char *argv[])
 {
@@ -21,6 +22,7 @@ int main(int argc, char *argv[])
   int case_insensitive = 0;
   int numeric = 0;
   int dir_sort = 0;
+  foldfn = nofold;
   char c;
   while(--argc > 0 && (*++argv)[0] == '-')
     while ((c = *++argv[0])) {
@@ -33,6 +35,7 @@ int main(int argc, char *argv[])
 	break;
       case 'f':
 	case_insensitive = 1;
+	foldfn = tolower;
 	break;
       case 'd':
 	dir_sort = 1;
@@ -49,12 +52,15 @@ int main(int argc, char *argv[])
     printf("input too big to sort\n");
     return 1;
   }
-  void *cmp = numeric ? numcmp : (case_insensitive) ?
-    (dir_sort) ? dirfcmp :insenstrcmp : (dir_sort) ? dircmp : strcmp;
+  void *cmp = numeric ? numcmp :  (dir_sort) ? dircmp : mystrcmp;
   my_qsort((void **) lines, 0, read_lines-1,
 	   (int (*)(void *, void *)) (cmp),
 	   sort_order);
   writelines(lines, read_lines);
+}
+
+int nofold(int c) {
+  return c;
 }
 
 int readlines(char *lines[], int max_lines) {
@@ -111,7 +117,7 @@ void swap(void *v[], int i, int j) {
   v[j] = temp;
 }
 
-int numcmp(const char *s1, const char *s2) {
+int numcmp(char *s1, char *s2) {
   double d1 = atof(s1);
   double d2 = atof(s2);
   if (d1 < d2)
@@ -121,39 +127,28 @@ int numcmp(const char *s1, const char *s2) {
   else
     return 0;
 }
-
-int insenstrcmp(const char *s1, const char *s2) {
-  for(; tolower(*s1) == tolower(*s2); s1++, s2++)
+int mystrcmp(char *s1, char *s2) {
+  for(; foldfn(*s1) == foldfn(*s2); s1++, s2++)
     if (*s1 == '\0')
       return 0;
-  return tolower(*s1) - tolower(*s2);
+  return foldfn(*s1) - foldfn(*s2);
 }
 
-char nextvalid(const char *s) {
+char *nextvalid(char *s) {
   while (*s != '\0') {
     if (isblank(*s) || isalnum(*s))
       break;
     s++;
   }
-  return *s;
+  return s;
 }
 
-int dircmp(const char *s1, const char *s2) {
-  while (nextvalid(s1) == nextvalid(s2)) {
+int dircmp(char *s1, char *s2) {
+  while (foldfn(*(s1 = nextvalid(s1))) == foldfn(*(s2 =nextvalid(s2)))) {
     if (*s1 == '\0')
       return 0;
     s1++;
     s2++;
   }
-  return *s1 - *s2;
-}
-
-int dirfcmp(const char *s1, const char *s2) {
-  while (tolower(nextvalid(s1)) == tolower(nextvalid(s2))) {
-    if (*s1 == '\0')
-      return 0;
-    s1++;
-    s2++;
-  }
-  return tolower(*s1) - tolower(*s2);
+  return foldfn(*s1) - foldfn(*s2);
 }
