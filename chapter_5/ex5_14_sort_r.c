@@ -5,18 +5,17 @@
 #define MAXLINES 5000
 #define MAXLEN 1000
 
-int readlines(char *lines[], int max_lines, int case_insensitive);
+int readlines(char *lines[], int max_lines);
 void writelines(char *lines[], int nlines);
 void my_qsort(void *lines[], int left, int right,
-	      int (*comp)(void *, void *), int (*reverse)(int));
+	      int (*comp)(void *, void *), int order);
 int numcmp(const char *s1, const char *s2);
-int reverse(int);
-int noop(int);
+int insenstrcmp(const char *s1, const char *s2);
 
 int main(int argc, char *argv[])
 {
   
-  int sort_reverse = 0;
+  int sort_order = 1;
   int case_insensitive = 0;
   int numeric = 0;
   char c;
@@ -24,7 +23,7 @@ int main(int argc, char *argv[])
     while ((c = *++argv[0])) {
       switch (c) {
       case 'r':
-	sort_reverse = 1;
+	sort_order = -1;
 	break;
       case 'n':
 	numeric = 1;
@@ -39,47 +38,40 @@ int main(int argc, char *argv[])
     }  
   char *lines[MAXLINES];
   // readlines
-  int read_lines = readlines(lines, MAXLINES, case_insensitive);
+  int read_lines = readlines(lines, MAXLINES);
   if (read_lines > MAXLINES) {
     printf("input too big to sort\n");
     return 1;
   }
 
   my_qsort((void **) lines, 0, read_lines-1,
-	   (int (*)(void *, void *)) (numeric ? numcmp : strcmp),
-	   (sort_reverse ? reverse : noop));
+	   (int (*)(void *, void *)) (numeric ? numcmp : (case_insensitive) ? insenstrcmp :strcmp),
+	   sort_order);
   writelines(lines, read_lines);
 }
 
-int readlines(char *lines[], int max_lines, int case_insensitive) {
+int readlines(char *lines[], int max_lines) {
   char *p;
   char line[MAXLEN];
   int read_lines = 0;
   int i = 0;
   char c;
-  while ((c = getchar()) != EOF) {
-    if (c == '\n') {
+  while ((c = getchar())) {
+    if ( i == 0 && c == EOF)
+      break;
+
+    if (c == '\n' || c == EOF) {
       line[i] = '\0';
       if (read_lines +1 > max_lines) {
-	return read_lines; // limit reached
+	break; // limit reached
       }
       lines[read_lines] = malloc(sizeof(*lines)* i);
       strcpy(lines[read_lines], line);
       read_lines++;
-      i = 0;	    
+      i = 0;
       continue;
     }
-    line[i++] = (case_insensitive) ? tolower(c): c;
-  }
-  if (i != 0) {
-    // unsaved line left
-    line[i] = '\0';
-    if (read_lines +1 > max_lines) {
-      return read_lines; // limit reached
-    }
-    lines[read_lines] = malloc(sizeof(*lines)* i);
-    strcpy(lines[read_lines], line);
-    read_lines++;
+    line[i++] = c;
   }
   return read_lines;
 }
@@ -90,7 +82,7 @@ void writelines(char *lines[], int nlines) {
 }
 
 // qsort in order defined by comp function
-void my_qsort(void *v[], int left, int right, int (*comp)(void *, void *), int (*mod)(int)) {
+void my_qsort(void *v[], int left, int right, int (*comp)(void *, void *), int order) {
   int i, last;
   void swap(void *v[], int, int);
   if (left >= right)
@@ -98,12 +90,12 @@ void my_qsort(void *v[], int left, int right, int (*comp)(void *, void *), int (
   swap(v, left, (left + right)/2);
   last = left;
   for (i = left + 1; i <= right; i++)
-    if ((*mod)((*comp)(v[i], v[left])) < 0)
+    if (order * ((*comp)(v[i], v[left])) < 0)
       swap(v, ++last, i);
 
   swap(v, left, last);
-  my_qsort(v, left, last-1, comp, mod);
-  my_qsort(v, last+1, right, comp, mod);
+  my_qsort(v, left, last-1, comp, order);
+  my_qsort(v, last+1, right, comp, order);
 }
 
 void swap(void *v[], int i, int j) {
@@ -123,13 +115,9 @@ int numcmp(const char *s1, const char *s2) {
     return 0;
 }
 
-int noop(int res) {
-  return res;
-}
-
-int reverse(int res) {
-  if (res == 0)
-    return res;
-  else
-    return -1*res;
+int insenstrcmp(const char *s1, const char *s2) {
+  for(; tolower(*s1) == tolower(*s2); s1++, s2++)
+    if (*s1 == '\0')
+      return 0;
+  return tolower(*s1) - tolower(*s2);
 }
