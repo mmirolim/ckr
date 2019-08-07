@@ -1,10 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #define MAXLINES 5000
 #define MAXLEN 1000
 
-int readlines(char *lines[], int max_lines);
+int readlines(char *lines[], int max_lines, int case_insensitive);
 void writelines(char *lines[], int nlines);
 void my_qsort(void *lines[], int left, int right,
 	      int (*comp)(void *, void *), int (*reverse)(int));
@@ -16,6 +17,7 @@ int main(int argc, char *argv[])
 {
   
   int sort_reverse = 0;
+  int case_insensitive = 0;
   int numeric = 0;
   char c;
   while(--argc > 0 && (*++argv)[0] == '-')
@@ -27,6 +29,9 @@ int main(int argc, char *argv[])
       case 'n':
 	numeric = 1;
 	break;
+      case 'f':
+	case_insensitive = 1;
+	break;
       default:
 	printf("error: undefined arg %c\n", c);
 	return 1;
@@ -34,7 +39,7 @@ int main(int argc, char *argv[])
     }  
   char *lines[MAXLINES];
   // readlines
-  int read_lines = readlines(lines, MAXLINES);
+  int read_lines = readlines(lines, MAXLINES, case_insensitive);
   if (read_lines > MAXLINES) {
     printf("input too big to sort\n");
     return 1;
@@ -46,7 +51,7 @@ int main(int argc, char *argv[])
   writelines(lines, read_lines);
 }
 
-int readlines(char *lines[], int max_lines) {
+int readlines(char *lines[], int max_lines, int case_insensitive) {
   char *p;
   char line[MAXLEN];
   int read_lines = 0;
@@ -64,7 +69,17 @@ int readlines(char *lines[], int max_lines) {
       i = 0;	    
       continue;
     }
-    line[i++] = c;
+    line[i++] = (case_insensitive) ? tolower(c): c;
+  }
+  if (i != 0) {
+    // unsaved line left
+    line[i] = '\0';
+    if (read_lines +1 > max_lines) {
+      return read_lines; // limit reached
+    }
+    lines[read_lines] = malloc(sizeof(*lines)* i);
+    strcpy(lines[read_lines], line);
+    read_lines++;
   }
   return read_lines;
 }
