@@ -11,6 +11,8 @@ void my_qsort(void *lines[], int left, int right,
 	      int (*comp)(void *, void *), int order);
 int numcmp(const char *s1, const char *s2);
 int insenstrcmp(const char *s1, const char *s2);
+int dircmp(const char *s1, const char *s2);
+int dirfcmp(const char *s1, const char *s2);
 
 int main(int argc, char *argv[])
 {
@@ -18,6 +20,7 @@ int main(int argc, char *argv[])
   int sort_order = 1;
   int case_insensitive = 0;
   int numeric = 0;
+  int dir_sort = 0;
   char c;
   while(--argc > 0 && (*++argv)[0] == '-')
     while ((c = *++argv[0])) {
@@ -31,6 +34,9 @@ int main(int argc, char *argv[])
       case 'f':
 	case_insensitive = 1;
 	break;
+      case 'd':
+	dir_sort = 1;
+	break;
       default:
 	printf("error: undefined arg %c\n", c);
 	return 1;
@@ -43,9 +49,10 @@ int main(int argc, char *argv[])
     printf("input too big to sort\n");
     return 1;
   }
-
+  void *cmp = numeric ? numcmp : (case_insensitive) ?
+    (dir_sort) ? dirfcmp :insenstrcmp : (dir_sort) ? dircmp : strcmp;
   my_qsort((void **) lines, 0, read_lines-1,
-	   (int (*)(void *, void *)) (numeric ? numcmp : (case_insensitive) ? insenstrcmp :strcmp),
+	   (int (*)(void *, void *)) (cmp),
 	   sort_order);
   writelines(lines, read_lines);
 }
@@ -119,5 +126,34 @@ int insenstrcmp(const char *s1, const char *s2) {
   for(; tolower(*s1) == tolower(*s2); s1++, s2++)
     if (*s1 == '\0')
       return 0;
+  return tolower(*s1) - tolower(*s2);
+}
+
+char nextvalid(const char *s) {
+  while (*s != '\0') {
+    if (isblank(*s) || isalnum(*s))
+      break;
+    s++;
+  }
+  return *s;
+}
+
+int dircmp(const char *s1, const char *s2) {
+  while (nextvalid(s1) == nextvalid(s2)) {
+    if (*s1 == '\0')
+      return 0;
+    s1++;
+    s2++;
+  }
+  return *s1 - *s2;
+}
+
+int dirfcmp(const char *s1, const char *s2) {
+  while (tolower(nextvalid(s1)) == tolower(nextvalid(s2))) {
+    if (*s1 == '\0')
+      return 0;
+    s1++;
+    s2++;
+  }
   return tolower(*s1) - tolower(*s2);
 }
