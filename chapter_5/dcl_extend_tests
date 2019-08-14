@@ -1,0 +1,9 @@
+char c
+char **argv
+int (*ptrarray)[13]
+static int *daytab[13]
+void *comp(int a)
+void (*fn)(void *, double)
+double *(*fn)(const double, void *)
+const char (*(*x(char *))[])(void)
+static const char (*(*x[3])())[5]
