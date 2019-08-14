@@ -53,12 +53,9 @@ int main()
     for (struct wnode *node = words; node != NULL;) {
       temp = node;
       node = node->next;
-      free(temp);
       free(temp->word);
+      free(temp);
     }
-
-    if (ln == 10)
-      break;
   }
   
   printtree(root);
