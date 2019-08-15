@@ -10,6 +10,7 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <time.h>
 
 #define NAME_MAX 255
 
@@ -42,6 +43,7 @@ int main(int argc, char *argv[])
 
 void dirwalk(char *name, void (*fn)(char *));
 
+char st[100];
 /* fsize: print size of file "name" in directory recursively */
 void fsize(char *name) {
   struct stat stbuf;
@@ -51,7 +53,10 @@ void fsize(char *name) {
   }
   if ((stbuf.st_mode & S_IFMT) == S_IFDIR)
     dirwalk(name, fsize);
-  printf("%8ld %s\n", stbuf.st_size, name);
+  strftime(st,sizeof(st),"%b %d %R %Y", localtime(&stbuf.st_mtim.tv_sec));
+  printf("Mode: %lo Owner: UID=%ld LFM: %s Size:%8ld %s\n",
+	 (unsigned long) stbuf.st_mode, (long) stbuf.st_uid,
+	 st,stbuf.st_size, name);
 }
 
 #define MAX_PATH 1024
