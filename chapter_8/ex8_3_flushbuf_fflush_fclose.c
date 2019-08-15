@@ -11,6 +11,9 @@
 #define EOF (-1)
 #define ERR (-2)
 #define PERMS 0666 /* RW for owner, group, others */
+#define FROMSTART 0
+#define FROMCUR 1
+#define FROMEND 2
 
 typedef struct flag {
   int unused, read, write, unbuf, eof, err;
@@ -41,7 +44,7 @@ int fillbuf(FILE *);
 int flushbuf(char *c, FILE *);
 int fflush(FILE *);
 int fclose(FILE *);
-
+int fseek(FILE *fp, long offset, int at);
 
 #define getc(p) (--(p)->cnt >= 0 ? (unsigned char) *(p)->ptr++ : fillbuf(p))
 #define putc(c, p) (--(p)->cnt >= 0 ? *(p)->ptr++ = (c) : flushbuf((char *)(&c), p))
@@ -62,6 +65,15 @@ int main(int argc, char *argv[]) {
 
   if (fclose(f))
     return 1;
+
+  // test fseek
+  if (fseek(fw, -3, FROMCUR))
+    return 1;
+  else {
+    c = 'w';
+    putc(c, fw);
+  }
+
   if (fclose(fw))
     return 1;
   
@@ -186,4 +198,24 @@ int fillbuf(FILE *fp) {
   }
 
   return (unsigned char) *fp->ptr++;
+}
+
+/* fseek: position cursor in a file */
+int fseek(FILE *fp, long offset, int whence) {
+  if (fp->flag.err)
+    return 1;
+  if (!fp->flag.unbuf) {
+    if (fp->flag.write) {
+      if (flushbuf(NULL, fp))
+	return 1;
+    } else if (fp->flag.read){
+      if (whence == FROMCUR) {
+	  offset -= fp->cnt;
+      }
+      // trash read buf
+      fp->cnt = 0;
+      fp->ptr = fp->base;
+    }
+  }
+  return (lseek(fp->fd, offset, whence) < 0);
 }
