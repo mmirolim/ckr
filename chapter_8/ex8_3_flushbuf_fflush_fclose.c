@@ -96,10 +96,18 @@ int flushbuf(char *c, FILE *fp) {
     fp->ptr = fp->base;
     return 0;
   }
-  int bufsize = (fp->flag.write && !fp->flag.unbuf) ? BUFSIZE  : 1;
-  int wn = (fp->cnt < 0) ? bufsize : bufsize - fp->cnt;
+  if (fp->flag.unbuf) {
+    if (c != NULL && write(fp->fd, c, 1) != 1) {
+      fp->flag.err = 1;
+      return 1;
+    } else
+      return 0;
+  }
+
+  int wn = (fp->cnt < 0) ? BUFSIZE : BUFSIZE - fp->cnt;
+  
   if (fp->base == NULL) {
-    if ((fp->base = (char *)malloc(bufsize)) == NULL) {
+    if ((fp->base = (char *)malloc(BUFSIZE)) == NULL) {
       fp->flag.err = 1;
       return 1;
     }
@@ -107,8 +115,8 @@ int flushbuf(char *c, FILE *fp) {
     fp->flag.err = 1;
     return 1;
   }
-  
-  fp->cnt = bufsize;
+
+  fp->cnt = BUFSIZE;
   fp->ptr = fp->base;
   if (c != NULL) {
     fp->cnt--;
