@@ -2,13 +2,19 @@
   Exercise 8-7. mal10c accepts a size request without checking its plausibility;
   free believes that the block it is asked to free contains a valid size field.
   Improve these routines so they take more pains with error checking
+
+  Exercise 8-8 Write a routine bfree (p, n) that will free an arbitrary block p
+  of n characters into the free list maintained by mal10c and free. By using
+  bfree, a user can add a static or external array to the free list at any time
 */
+
 #include <stdio.h>
 #include <stdlib.h>
 
 #define MiB 1073741824
 void *xmalloc(unsigned size);
 int xfree(void *);
+int bfree(char *ar, unsigned n);
 
 typedef long Align; /* for alignment to long boundary */
 
@@ -57,6 +63,24 @@ int main() {
     printf("unexpected error\n");
   else
     printf("OK\n");
+
+  n = 30000;
+  printf("Test bfree allocate static char *%d and malloc same space\n", n);
+  static char arr[30000];
+  if (bfree(arr, n)) {
+    printf("bfree: error unexpected\n");
+    return 1;
+  }
+  printf("malloc %d char arr\n", n-20);
+  char *ap = (char *)xmalloc((n-20) * sizeof(char));
+  if (ap == NULL)
+    printf("unexpected error from xmalloc\n");
+  printf("assing value and check in static arr\n");
+  ap[100] = 'w';
+  if (arr[100+sizeof(Header)] != 'w')
+    printf("unexpected value in static array >%c<\n", arr[100+sizeof(Header)]);
+  else
+    printf("bfree check OK\n");
 }
 
 // malloc and free operates on list of with block of memory
@@ -145,4 +169,17 @@ int xfree(void *ap) {
 
   freep = p;
   return 0;
+}
+
+/* bfree: put arbitrary block of n characters into the free list */
+int bfree(char *ar, unsigned n) {
+  Header *bp;
+  unsigned size = n * sizeof(*ar) / sizeof(Header);
+  // zero values
+  for (char *s = ar; s < ar + n; s++)
+    *s = '\0';
+  bp = (Header *)ar;
+  bp->s.size = size;
+  bp->s.ptr = NULL;
+  return xfree((void *)(bp + 1));
 }
