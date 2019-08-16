@@ -175,6 +175,9 @@ int xfree(void *ap) {
 int bfree(char *ar, unsigned n) {
   Header *bp;
   unsigned size = n * sizeof(*ar) / sizeof(Header);
+  if (size < 2) // too small
+    return 1;
+
   // zero values
   for (char *s = ar; s < ar + n; s++)
     *s = '\0';
